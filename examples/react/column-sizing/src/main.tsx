@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 
 import './index.css'
@@ -52,16 +52,25 @@ const defaultColumns = [
   table.createGroup({
     header: 'Name',
     footer: props => props.column.id,
+    meta: {
+      isFrozen: true,
+    },
     columns: [
       table.createDataColumn('firstName', {
         cell: info => info.getValue(),
         footer: props => props.column.id,
+        meta: {
+          isFrozen: true,
+        },
       }),
       table.createDataColumn(row => row.lastName, {
         id: 'lastName',
         cell: info => info.getValue(),
         header: () => <span>Last Name</span>,
         footer: props => props.column.id,
+        meta: {
+          isFrozen: true,
+        },
       }),
     ],
   }),
@@ -95,7 +104,16 @@ const defaultColumns = [
 ]
 
 function App() {
-  const [data, setData] = React.useState(() => [...defaultData])
+  const [data, setData] = React.useState(() => [
+    ...defaultData, ...defaultData, ...defaultData
+  ])
+  const state = React.useState(() => (
+    {
+      columnPinning: {
+        left: ['Name'],
+      }
+    }
+  ))[0]
   const [columns] = React.useState<typeof defaultColumns>(() => [
     ...defaultColumns,
   ])
@@ -110,6 +128,8 @@ function App() {
     columns,
     columnResizeMode,
     getCoreRowModel: getCoreRowModel(),
+    state,
+    enablePinning: true,
     debugTable: true,
     debugHeaders: true,
     debugColumns: true,
@@ -145,6 +165,11 @@ function App() {
                       colSpan: header.colSpan,
                       style: {
                         width: header.getSize(),
+                        position: header.column.columnDef.meta?.isFrozen ? 'sticky' : undefined,
+                        zIndex: header.column.columnDef.meta?.isFrozen ? 2 : undefined,
+                        top: header.column.columnDef.meta?.isFrozen ? 0 : undefined,
+                        left: header.column.columnDef.meta?.isFrozen ? header.column.getStart() : undefined,
+                        backgroundColor: 'white',
                       },
                     }}
                   >
@@ -176,11 +201,15 @@ function App() {
           <tbody>
             {instance.getRowModel().rows.map(row => (
               <tr key={row.id}>
-                {row.getVisibleCells().map(cell => (
+                {row.getVisibleCells().map((cell, i) => (
                   <td
                     {...{
                       key: cell.id,
                       style: {
+                        position: cell.column.columnDef.meta?.isFrozen ? 'sticky' : undefined,
+                        // TODO: Get running size?
+                        left: cell.column.columnDef.meta?.isFrozen ? cell.column.getStart() : undefined,
+                        backgroundColor: 'white',
                         width: cell.column.getSize(),
                       },
                     }}
@@ -259,12 +288,15 @@ function App() {
                   className: 'tr',
                 }}
               >
-                {row.getVisibleCells().map(cell => (
+                {row.getVisibleCells().map((cell, i) => (
                   <div
                     {...{
                       key: cell.id,
                       className: 'td',
                       style: {
+                        position: i === 0 ? 'sticky' : undefined,
+                        left: i === 0 ? 0 : undefined,
+                        backgroundColor: 'white',
                         width: cell.column.getSize(),
                       },
                     }}
@@ -320,6 +352,7 @@ function App() {
                           header.column.getIsResizing() ? 'isResizing' : ''
                         }`,
                         style: {
+
                           transform:
                             columnResizeMode === 'onEnd' &&
                             header.column.getIsResizing()
@@ -351,13 +384,13 @@ function App() {
                   },
                 }}
               >
-                {row.getVisibleCells().map(cell => (
+                {row.getVisibleCells().map((cell, i) => (
                   <div
                     {...{
                       key: cell.id,
                       className: 'td',
                       style: {
-                        position: 'absolute',
+                        position: i === 0 ? 'sticky' : 'absolute',
                         left: cell.column.getStart(),
                         width: cell.column.getSize(),
                       },

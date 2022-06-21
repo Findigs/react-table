@@ -66,9 +66,9 @@ function App() {
   const [columns] = React.useState(() => [...defaultColumns])
 
   const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({})
+    React.useState<VisibilityState>()
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([])
-  const [columnPinning, setColumnPinning] = React.useState({})
+  const [columnPinning, setColumnPinning] = React.useState({ left: ['progress'] })
 
   const [isSplit, setIsSplit] = React.useState(false)
   const rerender = () => setData(() => makeData(5000))

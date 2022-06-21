@@ -9,6 +9,8 @@ html {
 
 table,
 .divTable {
+  position: relative;
+  border-collapse: collapse;
   border: 1px solid lightgray;
   width: fit-content;
 }
